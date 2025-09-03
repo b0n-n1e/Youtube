@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.b0nn1e.youtube.search.widge.VideoCardList
+import com.b0nn1e.youtube.webs.bean.SearchListResponse.SearchResult
 import com.b0nn1e.youtube.webs.bean.SearchRequestBody
-import com.b0nn1e.youtube.webs.bean.SearchResult
 
 @Composable
 fun SearchScreen(

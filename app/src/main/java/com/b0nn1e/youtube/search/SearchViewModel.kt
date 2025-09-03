@@ -72,8 +72,4 @@ class SearchViewModel : ViewModel() {
         }
     }
 
-    // 清空搜索结果
-    fun clearSearchResults() {
-        _searchListResponse.value = null
-    }
 }

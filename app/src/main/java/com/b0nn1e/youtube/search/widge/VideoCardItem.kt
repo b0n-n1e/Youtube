@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.b0nn1e.youtube.webs.bean.SearchResult
+import com.b0nn1e.youtube.webs.bean.SearchListResponse.SearchResult
 import kotlinx.coroutines.flow.debounce
 
 /**
