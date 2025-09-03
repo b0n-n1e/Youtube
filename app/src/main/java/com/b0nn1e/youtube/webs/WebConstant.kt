@@ -6,5 +6,7 @@ object WebConstant {
 
     const val SEARCH = "search"
 
+    const val VIDEOS = "videos"
+
     const val KEY = "AIzaSyBMt7jKWO96EnXQEHPloNcpdQ6qvOyXCdo"
 }

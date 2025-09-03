@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.b0nn1e.youtube.home.HomeScreen
+import com.b0nn1e.youtube.home.HomeViewModel
 import com.b0nn1e.youtube.mine.MineScreen
 import com.b0nn1e.youtube.search.SearchScreen
 import com.b0nn1e.youtube.search.SearchViewModel
@@ -25,17 +26,22 @@ import com.b0nn1e.youtube.ui.widget.Screen
 
 class MainActivity : ComponentActivity() {
     private val searchViewModel by lazy { ViewModelProvider(this)[SearchViewModel::class] }
+    private val homeViewModel by lazy { ViewModelProvider(this)[HomeViewModel::class] }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CenterScreen(searchViewModel)
+            CenterScreen(
+                homeViewModel,
+                searchViewModel
+            )
         }
     }
 }
 
 @Composable
 fun CenterScreen(
+    homeViewModel: HomeViewModel,
     searchViewModel: SearchViewModel
 ) {
     val navController = rememberNavController()
@@ -57,7 +63,7 @@ fun CenterScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            composable(Screen.Home.route) { HomeScreen() }
+            composable(Screen.Home.route) { HomeScreen(viewModel = homeViewModel, onVideoClick = {} ) }
             composable(Screen.Search.route) { SearchScreen(viewModel = searchViewModel) }
             composable(Screen.Mine.route) { MineScreen() }
         }
