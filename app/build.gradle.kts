@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.ksp)
 }
 
 android {
@@ -11,7 +12,6 @@ android {
     defaultConfig {
         applicationId = "com.b0nn1e.youtube"
         minSdk = 24
-        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -56,12 +56,10 @@ dependencies {
     implementation(libs.androidx.material3)
     //navigation
     implementation(libs.androidx.navigation.compose)
-
     //coil
-    implementation("io.coil-kt:coil-compose:2.6.0")
-
+    implementation(libs.coil.compose)
     // LiveData Compose
-    implementation("androidx.compose.runtime:runtime-livedata:1.9.0")
+    implementation(libs.androidx.runtime.livedata)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
