@@ -4,12 +4,15 @@ import org.json.JSONException
 import org.json.JSONObject
 
 /**
- * Options used to configure the IFrame Player. All the options are listed here:
- * [IFrame player parameters](https://developers.google.com/youtube/player_parameters#Parameters)
+ * 用于配置 IFrame 播放器的选项。所有可用参数见：
+ * [IFrame 播放器参数](https://developers.google.com/youtube/player_parameters#Parameters)
+ * 使用 Builder 模式创建配置，确保参数正确设置。
  */
 class IFramePlayerOptions private constructor(private val playerOptions: JSONObject) {
-
     companion object {
+        /**
+         * 默认配置，启用播放器控制条（controls=1）。
+         */
         val default = Builder().controls(1).build()
     }
 
@@ -17,6 +20,10 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         return playerOptions.toString()
     }
 
+    /**
+     * 获取播放器的来源域名（origin）。
+     * @return 配置中的 origin 参数值
+     */
     internal fun getOrigin(): String {
         return playerOptions.getString(Builder.ORIGIN)
     }
@@ -42,6 +49,12 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         private val builderOptions = JSONObject()
 
         init {
+            /**
+             * 初始化默认参数：
+             * - 禁用自动播放、静音、控制条、全屏、相关视频、字幕
+             * - 启用 JS API
+             * - 设置默认域名和视频注解策略
+             */
             addInt(AUTO_PLAY, 0)
             addInt(MUTE, 0)
             addInt(CONTROLS, 0)
@@ -53,13 +66,17 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
             addInt(CC_LOAD_POLICY, 0)
         }
 
+        /**
+         * 构建 IFramePlayerOptions 实例。
+         * @return 配置好的播放器选项
+         */
         fun build(): IFramePlayerOptions {
             return IFramePlayerOptions(builderOptions)
         }
 
         /**
-         * Controls whether the web-based UI of the IFrame player is used or not.
-         * @param controls If set to 0: web UI is not used. If set to 1: web UI is used.
+         * 控制是否使用 IFrame 播放器的网页界面。
+         * @param controls 0：不使用网页界面；1：使用网页界面
          */
         fun controls(controls: Int): Builder {
             addInt(CONTROLS, controls)
@@ -67,26 +84,26 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * Controls if the video is played automatically after the player is initialized.
-         * @param autoplay if set to 1: the player will start automatically. If set to 0: the player will not start automatically
+         * 控制播放器初始化后是否自动播放视频。
+         * @param autoplay 0：不自动播放；1：自动播放
          */
-        fun autoplay(controls: Int): Builder {
-            addInt(AUTO_PLAY, controls)
+        fun autoplay(autoplay: Int): Builder {
+            addInt(AUTO_PLAY, autoplay)
             return this
         }
 
         /**
-         * Controls if the player will be initialized mute or not.
-         * @param mute if set to 1: the player will start muted and without acquiring Audio Focus. If set to 0: the player will acquire Audio Focus
+         * 控制播放器初始化时是否静音。
+         * @param mute 0：不静音，获取音频焦点；1：静音，不获取音频焦点
          */
-        fun mute(controls: Int): Builder {
-            addInt(MUTE, controls)
+        fun mute(mute: Int): Builder {
+            addInt(MUTE, mute)
             return this
         }
 
         /**
-         * Controls the related videos shown at the end of a video.
-         * @param rel If set to 0: related videos will come from the same channel as the video that was just played. If set to 1: related videos will come from multiple channels.
+         * 控制视频结束时显示的相关视频。
+         * @param rel 0：显示同一频道的相关视频；1：显示多个频道的相关视频
          */
         fun rel(rel: Int): Builder {
             addInt(REL, rel)
@@ -94,8 +111,8 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * Controls video annotations.
-         * @param ivLoadPolicy if set to 1: the player will show video annotations. If set to 3: they player won't show video annotations.
+         * 控制视频注解显示。
+         * @param ivLoadPolicy 1：显示视频注解；3：不显示视频注解
          */
         fun ivLoadPolicy(ivLoadPolicy: Int): Builder {
             addInt(IV_LOAD_POLICY, ivLoadPolicy)
@@ -103,23 +120,19 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         *  This parameter specifies the default language that the player will use to display captions.
-         *  If you use this parameter and also set the cc_load_policy parameter to 1, then the player
-         *  will show captions in the specified language when the player loads.
-         *  If you do not also set the cc_load_policy parameter, then captions will not display by default,
-         *  but will display in the specified language if the user opts to turn captions on.
-         *
-         * @param languageCode ISO 639-1 two-letter language code
+         * 指定播放器显示字幕的默认语言。
+         * 若同时设置 ccLoadPolicy 为 1，播放器加载时将显示指定语言的字幕。
+         * 若未设置 ccLoadPolicy，用户需手动启用字幕。
+         * @param languageCode ISO 639-1 两字母语言代码（如 "zh" 表示中文）
          */
         fun langPref(languageCode: String): Builder {
             addString(CC_LANG_PREF, languageCode)
             return this
         }
 
-
         /**
-         * Controls video captions. It doesn't work with automatically generated captions.
-         * @param ccLoadPolicy if set to 1: the player will show captions. If set to 0: the player won't show captions.
+         * 控制视频字幕显示（不适用于自动生成字幕）。
+         * @param ccLoadPolicy 0：不显示字幕；1：显示字幕
          */
         fun ccLoadPolicy(ccLoadPolicy: Int): Builder {
             addInt(CC_LOAD_POLICY, ccLoadPolicy)
@@ -127,11 +140,9 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * This parameter specifies the domain from which the player is running.
-         * Since the player in this library is not running from a website there should be no reason to change this.
-         * Using "https://www.youtube.com" (the default value) is recommended as some functions from the IFrame Player are only available
-         * when the player is running on a trusted domain.
-         * @param origin your domain.
+         * 指定播放器运行的域名。
+         * 默认值为 "https://www.youtube.com"，建议保留以确保某些功能可用。
+         * @param origin 运行播放器的域名
          */
         fun origin(origin: String): Builder {
             addString(ORIGIN, origin)
@@ -139,11 +150,9 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * 	The list parameter, in conjunction with the [listType] parameter, identifies the content that will load in the player.
-         * 	If the [listType] parameter value is "playlist", then the [list] parameter value specifies a YouTube playlist ID.
-         * 	@param list The playlist ID to be played.
-         * 	You need to prepend the playlist ID with the letters PL, for example:
-         * 	if playlist id is 1234, you should pass PL1234.
+         * 指定播放的播放列表 ID，需配合 listType 参数使用。
+         * 若 listType 为 "playlist"，则需提供播放列表 ID（需以 "PL" 开头，如 PL1234）。
+         * @param list 播放列表 ID
          */
         fun list(list: String): Builder {
             addString(LIST, list)
@@ -151,11 +160,10 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * Controls if the player is playing from video IDs or from playlist IDs.
-         * If set to "playlist", you should use the "list" parameter to set the playlist ID
-         * to be played.
-         * See original documentation for more info: https://developers.google.com/youtube/player_parameters#Selecting_Content_to_Play
-         * @param listType Set to "playlist" to play playlists. Then pass the playlist id to the [list] parameter.
+         * 控制播放器播放视频 ID 或播放列表 ID。
+         * 若设置为 "playlist"，需通过 list 参数设置播放列表 ID。
+         * 详见文档：https://developers.google.com/youtube/player_parameters#Selecting_Content_to_Play
+         * @param listType 设置为 "playlist" 以播放播放列表
          */
         fun listType(listType: String): Builder {
             addString(LIST_TYPE, listType)
@@ -163,9 +171,9 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * Setting this parameter to 0 prevents the fullscreen button from displaying in the player.
-         * See original documentation for more info: https://developers.google.com/youtube/player_parameters#Parameters
-         * @param fs if set to 1: the player fullscreen button will be show. If set to 0: the player fullscreen button will not be shown.
+         * 控制全屏按钮是否显示。
+         * 详见文档：https://developers.google.com/youtube/player_parameters#Parameters
+         * @param fs 0：不显示全屏按钮；1：显示全屏按钮
          */
         fun fullscreen(fs: Int): Builder {
             addInt(FS, fs)
@@ -173,9 +181,8 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * This parameter causes the player to begin playing the video at the given number of seconds from the start of the video.
-         * The parameter value is a positive integer.
-         * @param startSeconds positive integer, number of seconds to offset playback from the start of the video.
+         * 指定视频播放的起始秒数。
+         * @param startSeconds 正整数，视频起始播放的秒数
          */
         fun start(startSeconds: Int): Builder {
             addInt(START, startSeconds)
@@ -183,9 +190,8 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * This parameter specifies the time, measured in seconds from the beginning of the video, when the player should stop playing the video.
-         * The parameter value is a positive integer.
-         * @param endSeconds positive integer specifying the time, measured in seconds from the beginning of the video, when the player should stop playing the video.
+         * 指定视频播放的结束秒数。
+         * @param endSeconds 正整数，视频停止播放的秒数
          */
         fun end(endSeconds: Int): Builder {
             addInt(END, endSeconds)
@@ -193,28 +199,40 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
         }
 
         /**
-         * The modestbranding parameter is deprecated and will have no effect.
-         * To align with YouTube's branding requirements, the player now determines the appropriate branding treatment based on a combination of factors, including player size, other API parameters (e.g. controls), and additional signals.
-         * See August 15, 2023 deprecation announcement: https://developers.google.com/youtube/player_parameters#release_notes_08_15_2023
+         * modestbranding 参数已废弃，无效。
+         * 播放器现根据播放器大小、其他 API 参数（如 controls）等因素自动确定品牌展示。
+         * 详见 2023 年 8 月 15 日废弃公告：https://developers.google.com/youtube/player_parameters#release_notes_08_15_2023
          */
-        @Deprecated("Deprecated and will have no effect")
+        @Deprecated("已废弃，无效")
         fun modestBranding(modestBranding: Int): Builder {
             return this
         }
 
+        /**
+         * 向配置中添加字符串类型的键值对。
+         * @param key 参数键
+         * @param value 参数值
+         * @throws RuntimeException 如果 JSON 操作失败
+         */
         private fun addString(key: String, value: String) {
             try {
                 builderOptions.put(key, value)
             } catch (e: JSONException) {
-                throw RuntimeException("Illegal JSON value $key: $value")
+                throw RuntimeException("非法 JSON 值 $key: $value")
             }
         }
 
+        /**
+         * 向配置中添加整数类型的键值对。
+         * @param key 参数键
+         * @param value 参数值
+         * @throws RuntimeException 如果 JSON 操作失败
+         */
         private fun addInt(key: String, value: Int) {
             try {
                 builderOptions.put(key, value)
             } catch (e: JSONException) {
-                throw RuntimeException("Illegal JSON value $key: $value")
+                throw RuntimeException("非法 JSON 值 $key: $value")
             }
         }
     }

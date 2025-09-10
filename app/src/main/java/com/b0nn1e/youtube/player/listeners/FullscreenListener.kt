@@ -3,29 +3,28 @@ package com.b0nn1e.youtube.player.listeners
 import android.view.View
 
 /**
- * Interface used to keep track of full screen events
+ * 用于监听 YouTube 播放器全屏事件的接口。
+ * 实现此接口以处理播放器进入和退出全屏模式的事件。
  */
 interface FullscreenListener {
     /**
-     * Notify the host application that the player has entered full screen mode
-     * (the full screen button in the player UI has been clicked).
-     * After this call, the video will no longer be rendered in the [YouTubePlayerView],
-     * but will instead be rendered in [fullscreenView].
-     * The host application should add this View to a container that fills the screen
-     * in order to actually display the video full screen.
+     * 通知宿主应用播放器已进入全屏模式（用户点击了播放器 UI 的全屏按钮）。
+     * 调用此方法后，视频将不再在 [YouTubePlayerView] 中渲染，而是切换到 [fullscreenView]。
+     * 宿主应用需将此 View 添加到全屏容器中以实现视频全屏显示。
      *
-     * The application can explicitly exit fullscreen mode by invoking [exitFullscreen]
-     * (for example when the user presses the back button).
-     * However, the player will show its own UI to exist fullscreen.
-     * Regardless of how the player exits fullscreen mode, [onEnterFullscreen] will be invoked,
-     * signaling for the application to remove the custom View.
+     * 应用可通过调用 [exitFullscreen] 主动退出全屏模式（例如用户按下返回键）。
+     * 播放器自身也提供退出全屏的 UI。无论通过何种方式退出全屏，都会调用 [onExitFullscreen]，
+     * 通知宿主应用移除自定义 View。
+     *
+     * @param fullscreenView 用于渲染全屏视频的视图
+     * @param exitFullscreen 主动退出全屏模式的回调函数
      */
     fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit)
 
     /**
-     * Notify the host application that the player has exited full screen mode.
-     * The host application must hide the custom View (the View which was previously passed to
-     * [onEnterFullscreen]). After this call, the video will render in the player again.
+     * 通知宿主应用播放器已退出全屏模式。
+     * 宿主应用需隐藏之前传入 [onEnterFullscreen] 的自定义 View，
+     * 视频将重新在 [YouTubePlayerView] 中渲染。
      */
     fun onExitFullscreen()
 }

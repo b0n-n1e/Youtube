@@ -3,22 +3,28 @@ package com.b0nn1e.youtube.player.listeners
 import com.b0nn1e.youtube.player.PlayerConstants
 import com.b0nn1e.youtube.player.YouTubePlayer
 
+/**
+ * 用于监听 YouTube 播放器各种事件的接口。
+ * 实现此接口以处理播放器状态、进度、错误等事件。
+ */
 interface YouTubePlayerListener {
     /**
-     * Called when the player is ready to play videos. You should start using with the player only after this method is called.
-     * @param youTubePlayer The [YouTubePlayer] object.
+     * 当播放器准备好播放视频时调用。在此方法调用前，不应操作播放器。
+     * @param youTubePlayer 播放器实例
      */
     fun onReady(youTubePlayer: YouTubePlayer)
 
     /**
-     * Called every time the state of the player changes. Check [PlayerConstants.PlayerState] to see all the possible states.
-     * @param state a state from [PlayerConstants.PlayerState]
+     * 当播放器状态变化时调用。可参考 [PlayerConstants.PlayerState] 查看所有可能状态。
+     * @param youTubePlayer 播放器实例
+     * @param state 播放器状态
      */
     fun onStateChange(youTubePlayer: YouTubePlayer, state: PlayerConstants.PlayerState)
 
     /**
-     * Called every time the quality of the playback changes. Check [PlayerConstants.PlaybackQuality] to see all the possible values.
-     * @param playbackQuality a state from [PlayerConstants.PlaybackQuality]
+     * 当播放质量变化时调用。可参考 [PlayerConstants.PlaybackQuality] 查看所有可能值。
+     * @param youTubePlayer 播放器实例
+     * @param playbackQuality 播放质量
      */
     fun onPlaybackQualityChange(
         youTubePlayer: YouTubePlayer,
@@ -26,41 +32,51 @@ interface YouTubePlayerListener {
     )
 
     /**
-     * Called every time the speed of the playback changes. Check [PlayerConstants.PlaybackRate] to see all the possible values.
-     * @param playbackRate a state from [PlayerConstants.PlaybackRate]
+     * 当播放速率变化时调用。可参考 [PlayerConstants.PlaybackRate] 查看所有可能值。
+     * @param youTubePlayer 播放器实例
+     * @param playbackRate 播放速率
      */
     fun onPlaybackRateChange(youTubePlayer: YouTubePlayer, playbackRate: PlayerConstants.PlaybackRate)
 
     /**
-     * Called when an error occurs in the player. Check [PlayerConstants.PlayerError] to see all the possible values.
-     * @param error a state from [PlayerConstants.PlayerError]
+     * 当播放器发生错误时调用。可参考 [PlayerConstants.PlayerError] 查看所有可能值。
+     * @param youTubePlayer 播放器实例
+     * @param error 错误类型
      */
     fun onError(youTubePlayer: YouTubePlayer, error: PlayerConstants.PlayerError)
 
     /**
-     * Called periodically by the player, the argument is the number of seconds that have been played.
-     * @param second current second of the playback
+     * 定期调用，报告视频当前播放的秒数。
+     * @param youTubePlayer 播放器实例
+     * @param second 当前播放秒数
      */
     fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float)
 
     /**
-     * Called when the total duration of the video is loaded. <br></br><br></br>
-     * Note that getDuration() will return 0 until the video's metadata is loaded, which normally happens just after the video starts playing.
-     * @param duration total duration of the video
+     * 当视频总时长加载完成时调用。
+     * 注意：在视频元数据加载完成前（通常在视频开始播放后），getDuration() 将返回 0。
+     * @param youTubePlayer 播放器实例
+     * @param duration 视频总时长（秒）
      */
     fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float)
 
     /**
-     * Called periodically by the player, the argument is the percentage of the video that has been buffered.
-     * @param loadedFraction a number between 0 and 1 that represents the percentage of the video that has been buffered.
+     * 定期调用，报告视频已缓冲的百分比。
+     * @param youTubePlayer 播放器实例
+     * @param loadedFraction 已缓冲的视频比例（0.0 到 1.0）
      */
     fun onVideoLoadedFraction(youTubePlayer: YouTubePlayer, loadedFraction: Float)
 
     /**
-     * Called when the id of the current video is loaded
-     * @param videoId the id of the video being played
+     * 当当前视频的 ID 加载完成时调用。
+     * @param youTubePlayer 播放器实例
+     * @param videoId 正在播放的视频 ID
      */
     fun onVideoId(youTubePlayer: YouTubePlayer, videoId: String)
 
+    /**
+     * 当播放器 API 发生变化时调用。
+     * @param youTubePlayer 播放器实例
+     */
     fun onApiChange(youTubePlayer: YouTubePlayer)
 }

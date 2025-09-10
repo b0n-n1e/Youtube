@@ -14,15 +14,11 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.b0nn1e.youtube.R
 import com.b0nn1e.youtube.player.YouTubePlayer
-import com.b0nn1e.youtube.player.listeners.AbstractYouTubePlayerListener
-import com.b0nn1e.youtube.player.listeners.FullscreenListener
-import com.b0nn1e.youtube.player.listeners.YouTubePlayerCallback
-import com.b0nn1e.youtube.player.listeners.YouTubePlayerListener
+import com.b0nn1e.youtube.player.listeners.*
 import com.b0nn1e.youtube.player.options.IFramePlayerOptions
 import com.b0nn1e.youtube.player.utils.loadOrCueVideo
 
-private const val AUTO_INIT_ERROR = "YouTubePlayerView: If you want to initialize this view manually, " +
-        "you need to set 'enableAutomaticInitialization' to false."
+private const val AUTO_INIT_ERROR = "YouTubePlayerView: 如果你想手动初始化此视图，需将 'enableAutomaticInitialization' 设置为 false。"
 
 private val matchParent
     get() = FrameLayout.LayoutParams(
@@ -30,6 +26,10 @@ private val matchParent
         LayoutParams.MATCH_PARENT
     )
 
+/**
+ * 用户面向的 YouTube 播放器视图类，负责管理初始化、生命周期和自定义 UI。
+ * 内部委托 [LegacyYouTubePlayerView] 处理核心逻辑。
+ */
 class YouTubePlayerView(
     context: Context,
     attrs: AttributeSet? = null,
@@ -39,31 +39,38 @@ class YouTubePlayerView(
     constructor(context: Context) : this(context, null, 0)
     constructor(context: Context, attrs: AttributeSet? = null) : this(context, attrs, 0)
 
+    /**
+     * 存储全屏监听器列表。
+     */
     private val fullscreenListeners = mutableListOf<FullscreenListener>()
 
     /**
-     * A single [FullscreenListener] that is always added to the WebView,
-     * responsible for calling all optional listeners added from clients of the library.
+     * 内部全屏监听器，转发事件给所有注册监听器。
      */
     private val webViewFullscreenListener = object : FullscreenListener {
         override fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit) {
             if (fullscreenListeners.isEmpty()) {
-                throw IllegalStateException("To enter fullscreen you need to first register a FullscreenListener.")
+                throw IllegalStateException("进入全屏需先注册 FullscreenListener。")
             }
             fullscreenListeners.forEach { it.onEnterFullscreen(fullscreenView, exitFullscreen) }
         }
 
         override fun onExitFullscreen() {
             if (fullscreenListeners.isEmpty()) {
-                throw IllegalStateException("To enter fullscreen you need to first register a FullscreenListener.")
+                throw IllegalStateException("进入全屏需先注册 FullscreenListener。")
             }
             fullscreenListeners.forEach { it.onExitFullscreen() }
         }
     }
 
+    /**
+     * 内部遗留播放器视图，委托核心功能。
+     */
     private val legacyTubePlayerView = LegacyYouTubePlayerView(context, webViewFullscreenListener)
 
-    // this is a publicly accessible API
+    /**
+     * 是否启用自动初始化。
+     */
     var enableAutomaticInitialization: Boolean
 
     init {
@@ -79,7 +86,7 @@ class YouTubePlayerView(
         typedArray.recycle()
 
         if (autoPlay && videoId == null) {
-            throw IllegalStateException("YouTubePlayerView: videoId is not set but autoPlay is set to true. This combination is not allowed.")
+            throw IllegalStateException("YouTubePlayerView: videoId 未设置但 autoPlay 为 true。此组合不允许。")
         }
 
         val youTubePlayerListener = object : AbstractYouTubePlayerListener() {
@@ -87,88 +94,48 @@ class YouTubePlayerView(
                 videoId?.let {
                     youTubePlayer.loadOrCueVideo(legacyTubePlayerView.canPlay && autoPlay, videoId, 0f)
                 }
-
                 youTubePlayer.removeListener(this)
             }
         }
 
         if (enableAutomaticInitialization) {
-            fun initializeInternal() {
-                legacyTubePlayerView.initialize(
-                    youTubePlayerListener,
-                    handleNetworkEvents,
-                    IFramePlayerOptions.default,
-                    videoId
-                )
-            }
-            initializeInternal()
+            legacyTubePlayerView.initialize(youTubePlayerListener, handleNetworkEvents)
         }
     }
 
     /**
-     * Initialize the player. You must call this method before using the player.
-     * @param youTubePlayerListener listener for player events
-     * @param handleNetworkEvents if set to true a broadcast receiver will be registered and network events will be handled automatically.
-     * If set to false, you should handle network events with your own broadcast receiver.
-     * @param playerOptions customizable options for the embedded video player.
-     * @param videoId optional, used to load an initial video.
-     */
-    fun initialize(youTubePlayerListener: YouTubePlayerListener, handleNetworkEvents: Boolean, playerOptions: IFramePlayerOptions, videoId: String?) {
-        if (enableAutomaticInitialization) {
-            throw IllegalStateException(AUTO_INIT_ERROR)
-        } else {
-            legacyTubePlayerView.initialize(youTubePlayerListener, handleNetworkEvents, playerOptions, videoId)
-        }
-    }
-
-    /**
-     * Initialize the player.
-     * @param handleNetworkEvents if set to true a broadcast receiver will be registered and network events will be handled automatically.
-     * If set to false, you should handle network events with your own broadcast receiver.
-     *
-     * @see YouTubePlayerView.initialize
+     * 初始化播放器。需在开始使用前调用，如果启用自动初始化则无需手动调用。
+     * @param youTubePlayerListener 播放器事件监听器
+     * @param handleNetworkEvents 是否自动处理网络事件
+     * @param playerOptions 播放器配置选项
+     * @throws IllegalStateException 如果启用自动初始化
      */
     fun initialize(youTubePlayerListener: YouTubePlayerListener, handleNetworkEvents: Boolean, playerOptions: IFramePlayerOptions) {
         if (enableAutomaticInitialization) {
             throw IllegalStateException(AUTO_INIT_ERROR)
         } else {
-            legacyTubePlayerView.initialize(youTubePlayerListener, handleNetworkEvents, playerOptions, null)
+            legacyTubePlayerView.initialize(youTubePlayerListener, handleNetworkEvents, playerOptions)
         }
     }
 
     /**
-     * Initialize the player.
-     * @param handleNetworkEvents if set to true a broadcast receiver will be registered and network events will be handled automatically.
-     * If set to false, you should handle network events with your own broadcast receiver.
-     *
-     * @see YouTubePlayerView.initialize
+     * 初始化播放器。需在开始使用前调用，如果启用自动初始化则无需手动调用。
+     * @param youTubePlayerListener 播放器事件监听器
+     * @param handleNetworkEvents 是否自动处理网络事件
+     * @throws IllegalStateException 如果启用自动初始化
      */
     fun initialize(youTubePlayerListener: YouTubePlayerListener, handleNetworkEvents: Boolean) {
         if (enableAutomaticInitialization) {
             throw IllegalStateException(AUTO_INIT_ERROR)
         } else {
-            legacyTubePlayerView.initialize(youTubePlayerListener, handleNetworkEvents, IFramePlayerOptions.default)
+            legacyTubePlayerView.initialize(youTubePlayerListener, handleNetworkEvents)
         }
     }
 
     /**
-     * Initialize the player with player options.
-     *
-     * @see YouTubePlayerView.initialize
-     */
-    fun initialize(youTubePlayerListener: YouTubePlayerListener, playerOptions: IFramePlayerOptions) {
-        if (enableAutomaticInitialization) {
-            throw IllegalStateException(AUTO_INIT_ERROR)
-        } else {
-            legacyTubePlayerView.initialize(youTubePlayerListener, true, playerOptions)
-        }
-    }
-
-    /**
-     * Initialize the player. Network events are automatically handled by the player.
-     * @param youTubePlayerListener listener for player events
-     *
-     * @see YouTubePlayerView.initialize
+     * 初始化播放器，自动处理网络事件。
+     * @param youTubePlayerListener 播放器事件监听器
+     * @throws IllegalStateException 如果启用自动初始化
      */
     fun initialize(youTubePlayerListener: YouTubePlayerListener) {
         if (enableAutomaticInitialization) {
@@ -179,31 +146,39 @@ class YouTubePlayerView(
     }
 
     /**
-     * @param youTubePlayerCallback A callback that will be called when the YouTubePlayer is ready.
-     * If the player is ready when the function is called, the callback will return immediately.
-     * This function is called only once.
+     * 获取播放器实例的回调。
+     * 如果播放器已就绪，立即调用；否则等待就绪。
+     * 每个回调仅调用一次。
+     * @param youTubePlayerCallback 播放器就绪时的回调
      */
     fun getYouTubePlayerWhenReady(youTubePlayerCallback: YouTubePlayerCallback) = legacyTubePlayerView.getYouTubePlayerWhenReady(youTubePlayerCallback)
 
     /**
-     * Use this method to add your own custom UI to the player.
-     *
-     * You will be responsible to manage the custom Ui from your application.
-     *
-     * WARNING: if you intend to publish your app on the PlayStore, using a custom UI might break YouTube terms of service.
-     *
-     * @param layoutId the ID of the layout defining the custom Ui.
-     * @return The inflated View
+     * 使用自定义 UI 替换播放器的默认 UI。
+     * 调用后需自行管理自定义 UI，警告：自定义 UI 可能违反 PlayStore 政策。
+     * @param layoutId 自定义 UI 的布局 ID
+     * @return 填充的自定义视图
      */
     fun inflateCustomPlayerUi(@LayoutRes layoutId: Int) = legacyTubePlayerView.inflateCustomPlayerUi(layoutId)
 
+    /**
+     * 设置自定义 UI 视图，替换默认 UI。
+     * @param view 自定义 UI 视图
+     */
     fun setCustomPlayerUi(view: View) = legacyTubePlayerView.setCustomPlayerUi(view)
 
     /**
-     * Don't use this method if you want to publish your app on the PlayStore. Background playback is against YouTube terms of service.
+     * 启用或禁用后台播放。
+     * 注意：启用后台播放可能违反 YouTube 服务条款，不建议用于 PlayStore 应用。
+     * @param enable 是否启用后台播放
      */
     fun enableBackgroundPlayback(enable: Boolean) = legacyTubePlayerView.enableBackgroundPlayback(enable)
 
+    /**
+     * 响应生命周期状态变化。
+     * @param source 生命周期所有者
+     * @param event 生命周期事件
+     */
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
             Lifecycle.Event.ON_RESUME -> onResume()
@@ -214,24 +189,47 @@ class YouTubePlayerView(
     }
 
     /**
-     * Call this method before destroying the host Fragment/Activity, or register this View as an observer of its host lifecycle
+     * 在销毁宿主 Fragment/Activity 前调用，或注册此视图为生命周期观察者。
+     * 清理资源。
      */
     fun release() = legacyTubePlayerView.release()
 
+    /**
+     * 响应恢复事件。
+     */
     private fun onResume() = legacyTubePlayerView.onResume()
 
+    /**
+     * 响应停止事件。
+     */
     private fun onStop() = legacyTubePlayerView.onStop()
 
+    /**
+     * 添加播放器监听器。
+     * @param youTubePlayerListener 播放器监听器
+     */
     fun addYouTubePlayerListener(youTubePlayerListener: YouTubePlayerListener) = legacyTubePlayerView.webViewYouTubePlayer.addListener(youTubePlayerListener)
 
+    /**
+     * 移除播放器监听器。
+     * @param youTubePlayerListener 播放器监听器
+     */
     fun removeYouTubePlayerListener(youTubePlayerListener: YouTubePlayerListener) = legacyTubePlayerView.webViewYouTubePlayer.removeListener(youTubePlayerListener)
 
+    /**
+     * 添加全屏监听器。
+     * @param fullscreenListener 全屏监听器
+     */
     fun addFullscreenListener(fullscreenListener: FullscreenListener) = fullscreenListeners.add(fullscreenListener)
 
+    /**
+     * 移除全屏监听器。
+     * @param fullscreenListener 全屏监听器
+     */
     fun removeFullscreenListener(fullscreenListener: FullscreenListener) = fullscreenListeners.remove(fullscreenListener)
 
     /**
-     * Convenience method to set the [YouTubePlayerView] width and height to match parent.
+     * 设置视图宽度和高度为 MATCH_PARENT。
      */
     fun matchParent() {
         setLayoutParams(
@@ -241,8 +239,7 @@ class YouTubePlayerView(
     }
 
     /**
-     * Convenience method to set the [YouTubePlayerView] width to match parent and
-     * height to wrap content.
+     * 设置视图宽度为 MATCH_PARENT，高度为 WRAP_CONTENT。
      */
     fun wrapContent() {
         setLayoutParams(
@@ -251,6 +248,11 @@ class YouTubePlayerView(
         )
     }
 
+    /**
+     * 设置布局参数。
+     * @param targetWidth 目标宽度
+     * @param targetHeight 目标高度
+     */
     @Suppress("SameParameterValue")
     private fun setLayoutParams(targetWidth: Int, targetHeight: Int) {
         layoutParams = layoutParams.apply {
