@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
@@ -47,18 +48,22 @@ fun BottomBarWidget(
                     is Screen.Home -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
                     is Screen.Search -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
                     is Screen.Mine -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
+                    is Screen.VideoPlayer -> Icons.Default.Warning //空实现
                 },
                 label = when (screen) {
                     is Screen.Home -> "主页"
                     is Screen.Search -> "搜索"
                     is Screen.Mine -> "我的"
+                    is Screen.VideoPlayer -> "视频播放器" //空实现
                 },
                 tint = if (isSelected) YoutubeTheme.colors.iconCurrent else YoutubeTheme.colors.icon,
                 modifier = Modifier
                     .weight(1f)
                     .clickable {
                         navController.navigate(screen.route) {
+                            //这个方法把除startDestinationId之外所有的栈弹出再压入新的路由
                             popUpTo(navController.graph.startDestinationId)
+                            //防止创建新的实例，其实也是针对点击“home”的场景
                             launchSingleTop = true
                         }
                     }

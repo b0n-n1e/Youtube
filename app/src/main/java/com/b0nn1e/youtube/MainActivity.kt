@@ -11,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.b0nn1e.youtube.home.HomeScreen
 import com.b0nn1e.youtube.home.HomeViewModel
 import com.b0nn1e.youtube.mine.MineScreen
@@ -22,6 +24,8 @@ import com.b0nn1e.youtube.search.SearchViewModel
 import com.b0nn1e.youtube.ui.theme.YoutubeTheme
 import com.b0nn1e.youtube.ui.widget.BottomBarWidget
 import com.b0nn1e.youtube.ui.widget.Screen
+import com.b0nn1e.youtube.ui.widget.list
+import com.b0nn1e.youtube.video.VideoPlayerScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -45,7 +49,7 @@ fun CenterScreen(
     searchViewModel: SearchViewModel
 ) {
     val navController = rememberNavController()
-    val items = listOf(Screen.Home, Screen.Search, Screen.Mine)
+    val items = list
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -63,9 +67,29 @@ fun CenterScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            composable(Screen.Home.route) { HomeScreen(viewModel = homeViewModel, onVideoClick = {} ) }
-            composable(Screen.Search.route) { SearchScreen(viewModel = searchViewModel) }
+            composable(Screen.Home.route) {
+                HomeScreen(
+                    viewModel = homeViewModel,
+                    onVideoClick = {videoId ->
+                        navController.navigate(Screen.VideoPlayer.createRoute(videoId))
+                    }
+                ) }
+            composable(Screen.Search.route) {
+                SearchScreen(
+                    viewModel = searchViewModel,
+                    onItemClick = {videoId->
+                        navController.navigate(Screen.VideoPlayer.createRoute(videoId))
+                    }
+                )
+            }
             composable(Screen.Mine.route) { MineScreen() }
+            composable(
+                route = Screen.VideoPlayer.route,
+                arguments = listOf(navArgument("videoId") { type = NavType.StringType })
+            ) {navBackStateEntry ->
+                val videoId = navBackStateEntry.arguments?.getString("videoId")?:""
+                VideoPlayerScreen(videoId)
+            }
         }
     }
 }

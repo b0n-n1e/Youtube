@@ -46,7 +46,8 @@ import kotlinx.coroutines.flow.debounce
 @Composable
 fun VideoCardItem(
     searchResult: SearchResult,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onItemClick : (videoId : String) -> Unit
 ) {
     // 确保 snippet 非空
     val snippet = searchResult.snippet ?: run {
@@ -70,7 +71,8 @@ fun VideoCardItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.medium,
+        onClick = {onItemClick(searchResult.id.videoId ?: "")}
     ) {
         Column {
             // 缩略图
@@ -150,7 +152,8 @@ fun VideoCardItem(
 fun VideoCardList(
     modifier: Modifier = Modifier,
     searchResults: List<SearchResult>,
-    lazyListState: LazyListState
+    lazyListState: LazyListState,
+    onItemClick : (videoId : String) -> Unit
 ) {
     // 缓存过滤后的视频列表
     val videoResults = remember(searchResults) {
@@ -171,7 +174,10 @@ fun VideoCardList(
             key = { index -> videoResults[index].id.videoId!! },
             contentType = { "VideoCard" }
         ) { index ->
-            VideoCardItem(searchResult = videoResults[index])
+            VideoCardItem(
+                searchResult = videoResults[index],
+                onItemClick = onItemClick
+            )
         }
     }
 }

@@ -32,6 +32,7 @@ import coil.compose.AsyncImage
 import com.b0nn1e.youtube.webs.bean.PopularVideosResponse
 import androidx.compose.material3.pulltorefresh.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextOverflow
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -194,7 +195,7 @@ fun VideoCard(video: PopularVideosResponse.Item, onClick: () -> Unit) {
                 text = video.snippet?.title ?: "No Title",
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(

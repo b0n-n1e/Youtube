@@ -24,7 +24,8 @@ import com.b0nn1e.youtube.webs.bean.SearchRequestBody
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
+    onItemClick : (videoId : String) -> Unit
 ) {
     // 创建 LazyListState
     val lazyListState = rememberLazyListState()
@@ -111,7 +112,8 @@ fun SearchScreen(
                 VideoCardList(
                     modifier = Modifier.fillMaxSize(),
                     searchResults = searchResults,
-                    lazyListState = lazyListState
+                    lazyListState = lazyListState,
+                    onItemClick = onItemClick
                 )
             }
         }
